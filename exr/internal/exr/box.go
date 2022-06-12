@@ -36,3 +36,10 @@ func (b Box2i) Width() int32 {
 func (b Box2i) Height() int32 {
 	return b.YMax - b.YMin + 1
 }
+
+func (b Box2i) Contains(other Box2i) bool {
+	return other.XMin >= b.XMin &&
+		other.XMax <= b.XMax &&
+		other.YMin >= b.YMin &&
+		other.YMax <= b.YMax
+}
