@@ -10,7 +10,7 @@ Not all EXR files are supported at the moment. Make sure to check the
 Add the library as a dependency to your project.
 
 ```sh
-go get github.com/mokiat/goexr
+go get github.com/mokiat/goexr/exr@latest
 ```
 
 Parse the image as with any other format. For example:
@@ -23,7 +23,7 @@ import (
 	"image"
 	"os"
 
-	_ "github.com/mokiat/goexr"
+	_ "github.com/mokiat/goexr/exr"
 )
 
 func main() {
@@ -46,7 +46,7 @@ that there is a decoder registered with the `image` package.
 
 ```go
 import (
-  _ "github.com/mokiat/goexr"
+  _ "github.com/mokiat/goexr/exr"
 )
 ```
 
@@ -82,5 +82,5 @@ Supported channel formats:
 At the time of writing, EXR images produced by the following programs appear
 to be supported:
 
-- Krita
-- GIMP
+- [Krita](https://krita.org/)
+- [GIMP](https://www.gimp.org/)
