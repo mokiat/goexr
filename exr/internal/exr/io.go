@@ -13,7 +13,7 @@ func Read(in io.Reader, data any) error {
 	return binary.Read(in, order, data)
 }
 
-func ReadNullTerminatedString(in io.Reader, target *string) error {
+func ReadNullTerminatedString[T ~string](in io.Reader, target *T) error {
 	var buffer []byte
 	for {
 		var char byte
@@ -25,6 +25,6 @@ func ReadNullTerminatedString(in io.Reader, target *string) error {
 		}
 		buffer = append(buffer, char)
 	}
-	*target = string(buffer)
+	*target = T(buffer)
 	return nil
 }

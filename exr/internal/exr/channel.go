@@ -58,12 +58,12 @@ type PixelType int32
 func (t PixelType) String() string {
 	switch t {
 	case PixelTypeUint:
-		return "uint"
+		return "UINT"
 	case PixelTypeHalf:
-		return "half"
+		return "HALF"
 	case PixelTypeFloat:
-		return "float"
+		return "FLOAT"
 	default:
-		return fmt.Sprintf("unknown(%d)", t)
+		return fmt.Sprintf("UNKNOWN(%d)", t)
 	}
 }

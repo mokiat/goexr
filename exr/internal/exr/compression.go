@@ -64,6 +64,6 @@ func (c Compression) String() string {
 	case CompressionB44A:
 		return "B44A"
 	default:
-		return fmt.Sprintf("unknown(%d)", c)
+		return fmt.Sprintf("UNKNOWN(%d)", c)
 	}
 }

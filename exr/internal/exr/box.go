@@ -28,3 +28,11 @@ type Box2i struct {
 	XMax int32
 	YMax int32
 }
+
+func (b Box2i) Width() int32 {
+	return b.XMax - b.XMin + 1
+}
+
+func (b Box2i) Height() int32 {
+	return b.YMax - b.YMin + 1
+}
