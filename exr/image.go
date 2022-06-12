@@ -33,6 +33,9 @@ func (i *RGBAImage) Bounds() image.Rectangle {
 // At returns the color of the pixel at (x, y).
 // At(Bounds().Min.X, Bounds().Min.Y) returns the upper-left pixel of the grid.
 // At(Bounds().Max.X-1, Bounds().Max.Y-1) returns the lower-right one.
+//
+// The returned color is of type RGBAColor which can be used to acquire the
+// linear (float) components of the color.
 func (i *RGBAImage) At(x, y int) color.Color {
 	if !(image.Point{x, y}.In(i.rect)) {
 		return RGBAColor{}

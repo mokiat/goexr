@@ -12,6 +12,10 @@ func init() {
 	image.RegisterFormat(exr.Extension, string(exr.MagicSequence[:]), Decode, DecodeConfig)
 }
 
+// DecodeConfig returns the color model and dimensions of an EXR image without
+// decoding the entire image.
+//
+// This function supports all version 2 EXR images.
 func DecodeConfig(in io.Reader) (image.Config, error) {
 	var magic exr.Magic
 	if err := exr.ReadMagic(in, &magic); err != nil {
@@ -41,6 +45,14 @@ func DecodeConfig(in io.Reader) (image.Config, error) {
 	}, nil
 }
 
+// Decode reads an EXR image from in and returns it as an image.Image.
+// The type of the Image is RGBAImage.
+//
+// Only a limited set of EXR image types are supported at the moment.
+// The main restrictions are as follows, though others apply as well:
+//
+// 	- They have to be single-part scan line images.
+// 	- They have to use no compression or zip compression.
 func Decode(in io.Reader) (image.Image, error) {
 	var magic exr.Magic
 	if err := exr.ReadMagic(in, &magic); err != nil {
