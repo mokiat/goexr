@@ -72,5 +72,86 @@ func Decode(in io.Reader) (image.Image, error) {
 		return nil, fmt.Errorf("error reading header: %w", err)
 	}
 
-	return nil, fmt.Errorf("TODO")
+	dataWindow := header.DataWindow
+	if dataWindow.Width() <= 0 || dataWindow.Height() <= 0 {
+		return nil, fmt.Errorf("invalid data window size (%d x %d)", dataWindow.Width(), dataWindow.Height())
+	}
+
+	displayWindow := header.DisplayWindow
+	if !dataWindow.Contains(displayWindow) {
+		return nil, fmt.Errorf("invalid display window: not contained by data window")
+	}
+
+	lineOrder := header.LineOrder
+	if lineOrder != exr.LineOrderIncreasingY {
+		return nil, fmt.Errorf("unsupported line order %q", lineOrder)
+	}
+
+	var (
+		decompressor exr.Decompressor
+	)
+
+	compression := header.Compression
+	switch compression {
+	case exr.CompressionNone:
+		decompressor = exr.NewNopDecompressor()
+	case exr.CompressionZIP:
+		decompressor = exr.NewZipDecompressor()
+	default:
+		return nil, fmt.Errorf("unsupported compression %q", compression)
+	}
+
+	var (
+		dataChannelR = exr.NewNopPixelData(0.0)
+		dataChannelG = exr.NewNopPixelData(0.0)
+		dataChannelB = exr.NewNopPixelData(0.0)
+		dataChannelA = exr.NewNopPixelData(1.0)
+	)
+
+	dataChannels := make([]exr.PixelData, len(header.Channels))
+	for i, channel := range header.Channels {
+		switch channel.PixelType {
+		case exr.PixelTypeUint:
+			dataChannels[i] = exr.NewUint32PixelData(dataWindow, channel.XSampling, channel.YSampling)
+		case exr.PixelTypeHalf:
+			dataChannels[i] = exr.NewFloat16PixelData(dataWindow, channel.XSampling, channel.YSampling)
+		case exr.PixelTypeFloat:
+			dataChannels[i] = exr.NewFloat32PixelData(dataWindow, channel.XSampling, channel.YSampling)
+		default:
+			return nil, fmt.Errorf("unsupported channel pixel type %q", channel.PixelType)
+		}
+		switch channel.Name {
+		case "R":
+			dataChannelR = dataChannels[i]
+		case "G":
+			dataChannelG = dataChannels[i]
+		case "B":
+			dataChannelB = dataChannels[i]
+		case "A":
+			dataChannelA = dataChannels[i]
+		}
+	}
+
+	chunkCount := exr.ChunkCount(dataWindow, compression)
+
+	if err := exr.ReadOffsets(in, chunkCount); err != nil {
+		return nil, fmt.Errorf("error reading offsets: %w", err)
+	}
+
+	for i := 0; i < chunkCount; i++ {
+		if err := exr.ReadScanLineBlock(in, dataWindow, compression, decompressor, dataChannels); err != nil {
+			return nil, fmt.Errorf("error reading scan line block: %w", err)
+		}
+	}
+
+	return &RGBAImage{
+		rect: image.Rect(
+			int(displayWindow.XMin), int(displayWindow.YMin),
+			int(displayWindow.XMax+1), int(displayWindow.YMax+1),
+		),
+		channelR: dataChannelR,
+		channelG: dataChannelG,
+		channelB: dataChannelB,
+		channelA: dataChannelA,
+	}, nil
 }
